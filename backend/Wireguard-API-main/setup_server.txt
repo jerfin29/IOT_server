@@ -1,0 +1,100 @@
+###Installation
+apt update
+apt upgrade -y 
+apt install git -y
+add-apt-repository 'deb http://ppa.launchpad.net/wireguard/wireguard/ubuntu focal main'
+apt install wireguard -y
+apt install apache2 -y
+apt install php -y
+apt install libapache2-mod-php
+
+
+
+
+###Files to Update
+##Setup your project to web
+    Clone your git repo to "/var/www/example-repo"
+    nano /etc/apache2/sites-available/wg.conf
+""""
+    <VirtualHost *:80>
+    ServerAdmin hello@jerlin.me       
+    DocumentRoot "/var/www/Wireguard-API"
+    ServerName www.example.com  
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    <Directory "/var/www/Wireguard-API">
+            Options Indexes FollowSymLinks ExecCGI Includes
+            AllowOverride All
+            Require all granted
+    </Directory>
+</VirtualHost>
+
+""""
+Update with this above viritual host cofiguration
+
+a2dissite  000-default.conf 
+a2ensite wg
+systemctl reload apache2
+
+a2enmod headers
+a2enmod rewrite
+systemctl restart apache2
+
+Outside the htdocs 
+    Create a file env.json and paste below content
+"""
+{
+    "database": "wg_vpn",
+    "username": "Your Username",
+    "password": "Your Password",
+    "server": "Your ServerName",
+    "email_api_key": "Your_Sendgrid_Key"
+}
+"""
+###Install Mongodb
+Follow steps : https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
+$(service mongod start)
+
+Install mongodb-php driver Visit : https://www.mongodb.com/docs/drivers/php-drivers/
+
+###Setup Wireguard
+cd /etc/wireguard/
+wg genkey | tee privatekey | wg pubkey | tee publickey
+chmod 600 privatekey
+nano wg0.conf
+"""
+[Interface]
+PrivateKey = SERVERPRIVATEKEY
+Address = 172.20.0.1/16
+ListenPort = 44556
+"""
+
+
+
+
+###Start Services
+systemctl start apache2
+
+
+
+###Enable
+
+###Edit
+
+###Update
+
+
+###Errors
+Apache - if apache default page is not showing in browser check ufw or $(ufw allow 80)
+
+
+
+
+
+
+###Add Permission to visudo
+
+visudo 
+www-data ALL=(ALL:ALL) NOPASSWD: ALL
